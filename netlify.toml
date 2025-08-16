@@ -1,0 +1,6 @@
+# Redirect world.geo.json to the Natural Earth dataset on GitHub
+[[redirects]]
+  from = "/world.geo.json"
+  to = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson"
+  status = 200
+  force = true

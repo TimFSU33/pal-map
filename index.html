@@ -14,7 +14,7 @@
 <script>
   window.WORLD_GEOJSON_URLS = [
     "./world.geo.json",
-    "https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson"
+    "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson"
   ];
 </script>
 
@@ -280,7 +280,7 @@
   async function loadWorld() {
     for (const url of window.WORLD_GEOJSON_URLS) {
       try {
-        const res = await fetch(url, { cache: "force-cache" });
+        const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) continue;
         const geo = await res.json();
         return geo;
@@ -290,6 +290,13 @@
   }
 
   const [rows, geo] = await Promise.all([loadData(), loadWorld()]);
+  console.log("DATA rows:", rows?.length);
+  console.log(
+    "GEO type:",
+    geo?.type,
+    "features:",
+    Array.isArray(geo?.features) ? geo.features.length : "n/a"
+  );
 
   // Normalize & index data
   const data = rows.map(d => ({...d, date: d.recognition_date ? parseDate(d.recognition_date) : null}));
