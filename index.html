@@ -10,7 +10,9 @@
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-<!-- 🔧 Try local world.geo.json first, then remote as fallback -->
+<!-- 🔧 Preserve WORLD_GEOJSON_URLS for backward compatibility. The app now
+     fetches world boundaries from the world-atlas CDN in loadWorld(), so
+     this array is unused. -->
 <script>
   window.WORLD_GEOJSON_URLS = [
     "./world.geo.json",
@@ -277,16 +279,21 @@
   }
 
   // World geo
+  // Fetch a compact TopoJSON file from the world‑atlas package and convert it
+  // into a GeoJSON FeatureCollection using topojson-client. This avoids
+  // relying on a large local GeoJSON and improves compatibility on
+  // GitHub Pages and Netlify.
   async function loadWorld() {
-    for (const url of window.WORLD_GEOJSON_URLS) {
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) continue;
-        const geo = await res.json();
-        return geo;
-      } catch(e) {}
+    const topoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+    const res = await fetch(topoUrl, { cache: "no-store" });
+    if (!res.ok) {
+      throw new Error("Failed to load world TopoJSON.");
     }
-    throw new Error("Failed to load world GeoJSON. Update WORLD_GEOJSON_URLS.");
+    const topo = await res.json();
+    // Convert TopoJSON to GeoJSON. The world-atlas dataset exposes
+    // an object named `countries` containing all country boundaries.
+    const geo = topojson.feature(topo, topo.objects.countries);
+    return geo;
   }
 
   const [rows, geo] = await Promise.all([loadData(), loadWorld()]);
